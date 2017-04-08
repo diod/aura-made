@@ -14,9 +14,9 @@ function capture_image($id) {
   $fs = "images/${id}_src.jpg";
   $f  = "images/$id.jpg";
   $ret = 0;
-  system("numlockx on");
+  system('sudo -u mediamead /home/mediamead/aura-made/numlockx.sh on');
   system("ffmpeg -f v4l2 -video_size 1280x960 -i /dev/video0 -ss 2.5 -frames 1 temp/output%03d.png",$ret);
-  system("numlockx off");
+  system('sudo -u mediamead /home/mediamead/aura-made/numlockx.sh off');
 //  system("gphoto2 --capture-image-and-download --filename ".$fs, $ret);
   if ($ret!=0) {
     echo ("ERROR capturing!\n");

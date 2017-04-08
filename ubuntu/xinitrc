@@ -1,5 +1,9 @@
 [[ -f ~/.Xresources ]] && xrdb -merge ~/.Xresources
 xrandr --dpi 96
 xxkb &
+unclutter -root -idle 0 &
+xset s off
+xset s noblank
+xset -dpms
 setxkbmap -layout us,ru -option grp:ctrl_shift_toggle
 openbox --startup "bash /home/mediamead/aura-made/init.sh"
