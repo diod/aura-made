@@ -14,6 +14,9 @@ sleep 1;
 wmctrl -a Mozilla -b remove,maximized_vert,maximized_horz; #unmaximize
 wmctrl -a Mozilla -e "0,0,0,768,768"; #move to the right desktop
 wmctrl -a Mozilla -b add,maximized_vert,maximized_horz; #maximize
+
+sleep 2;
+
 xdotool key --window `xdotool search --name Mozilla` F11; #send F11 (fullscreen)
 
 # no more used

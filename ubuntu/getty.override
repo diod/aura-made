@@ -1,3 +1,23 @@
 [Service]
+User=mediamead
+PAMName=login
+KillMode=control-group
+
+StandardOutput=tty
+StandardInput=tty-fail
+
 ExecStart=
-ExecStart=-/sbin/agetty -m mediamead -n --noclear %I $TERM
+ExecStart=-/home/mediamead/xlogin $TERM
+
+Type=simple
+Restart=always
+RestartSec=0
+UtmpIdentifier=:0
+TTYPath=/dev/%I
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+IgnoreSIGPIPE=no
+
+
+

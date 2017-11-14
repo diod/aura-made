@@ -1,25 +1,40 @@
 <?php
 header("Access-Control-Allow-Origin: ".$_SERVER['HTTP_ORIGIN']);
-$ret = 0;
-system('bash -c "/usr/bin/ffplay -nodisp -showmode 0 -t 0.35 -autoexit /home/mediamead/aura-made/sound_camera.wav </dev/null >>/tmp/aura.log 2>&1 &"', $ret);
+chdir(__DIR__.'/../../');
+
+_log("post");
+
+//$ret = 0;
+//system('bash -c "/usr/bin/ffplay -nodisp -showmode 0 -t 0.35 -autoexit /home/mediamead/aura-made/sound_camera.wav </dev/null >>/tmp/aura.log 2>&1 &"', $ret);
 
 $id = date('Ymd-His');
 $f=capture_image($id);
+
+ob_start();
 $res = upload_image($id,$f);
 echo("res: ".$res."\n");
 process_image($f);
 
+_log(ob_get_contents());
+ob_end_flush();
+
+_log('',true); //close log
 
 function capture_image($id) {
+  ob_start();
+  
   $fs = "images/${id}_src.jpg";
   $f  = "images/$id.jpg";
   $ret = 0;
-  system('sudo -u mediamead /home/mediamead/aura-made/numlockx.sh on');
+  system('/home/mediamead/aura-made/numlockx.sh on');
   system("ffmpeg -f v4l2 -video_size 1280x960 -i /dev/video0 -ss 2.5 -frames 1 temp/output%03d.png",$ret);
-  system('sudo -u mediamead /home/mediamead/aura-made/numlockx.sh off');
+  system('/home/mediamead/aura-made/numlockx.sh off');
 //  system("gphoto2 --capture-image-and-download --filename ".$fs, $ret);
   if ($ret!=0) {
-    echo ("ERROR capturing!\n");
+    _log(ob_get_contents());
+    _log("ERROR capturing!");
+    ob_end_flush();
+
     return false;
   }
 //  rename("output001.jpg", $fs);
@@ -32,9 +47,12 @@ function capture_image($id) {
 
   system($cmd,$ret);
   if ($ret!=0) {
-    echo ("ERROR converting!\n");
+    _log(ob_get_contents());
+    _log("ERROR converting!");
+    ob_end_flush();
     return false;
   }
+  ob_end_clean();
 
   return $fs;
 }
@@ -95,5 +113,37 @@ function old_upload_image($id,$f) {
     fclose($fp);
   } catch (Exception $e) {
     return array('status'=>'ERROR', 'statusInfo'=>'Network error');
+  }
+}
+
+function _log($msg, $close = false) {
+  static $fd = null;
+  static $rq = '';
+  
+  if ($close && $fd) {
+    fclose($fd);
+    $fd = null;
+    $rq = '';
+    return;
+  }
+  
+  if (!$fd) {
+    $fd = fopen("/home/mediamead/avatar.log","a");
+    
+    $bytes = openssl_random_pseudo_bytes(4);
+    $alpha = '1234567890abcdefghijeklmopqrstuvwxyzABCDEFGHIJEKLMOPQRSTUVWXYZ!@#$%^&*()_+-';
+    
+    $rq = '';
+    for($i=0;$i<strlen($bytes);$i++) {
+      $rq .= $alpha[$bytes[$i]%strlen($alpha)];
+    }
+  }
+  
+  $prefix = date('Y-m-d H:i:s').' '.$rq.' ';
+  
+  $m = explode("\n",$msg);
+  
+  foreach($m as $r) {
+    fwrite($fd, $prefix.$r."\n");
   }
 }
